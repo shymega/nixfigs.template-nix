@@ -4,7 +4,7 @@
 # Drop one file per host in this directory to enable it; `hosts/default.nix`
 # picks up everything under `enabled.d/` automatically (mirrors nixfigs'
 # hosts/declarations/enabled.d convention).
-{ mkHost, ... }:
+{mkHost, ...}:
 mkHost {
   type = "nixos";
   hostname = "example-nixos";

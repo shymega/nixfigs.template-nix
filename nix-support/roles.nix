@@ -13,17 +13,21 @@ rec {
     "workstation"
   ];
   utils = rec {
-    checkRoles =
-      targetRoles: configOrHostRoles:
-      let
-        checkRole = role: builtins.elem role roles;
+    checkRoles = targetRoles: configOrHostRoles: let
+      checkRole = role: builtins.elem role roles;
 
-        rolesList = if builtins.isList targetRoles then targetRoles else [ targetRoles ];
+      rolesList =
+        if builtins.isList targetRoles
+        then targetRoles
+        else [targetRoles];
 
-        isConfig = builtins.isAttrs configOrHostRoles;
+      isConfig = builtins.isAttrs configOrHostRoles;
 
-        enabledRoles = if isConfig then configOrHostRoles.nixfigs.meta.rolesEnabled else configOrHostRoles;
-      in
+      enabledRoles =
+        if isConfig
+        then configOrHostRoles.nixfigs.meta.rolesEnabled
+        else configOrHostRoles;
+    in
       (builtins.any checkRole rolesList)
       && (builtins.any (role: builtins.elem role enabledRoles) rolesList);
   };

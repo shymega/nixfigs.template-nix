@@ -6,8 +6,7 @@
   inputs,
   lib ? inputs.nixpkgs.lib,
   ...
-}:
-{
+}: {
   linuxSystems = [
     "x86_64-linux"
     "aarch64-linux"
@@ -41,20 +40,20 @@
 
   forEachSystem = systems: f: lib.genAttrs systems f;
 
-  forDefaultSystems =
-    f:
+  forDefaultSystems = f:
     lib.genAttrs [
       "x86_64-linux"
       "aarch64-linux"
-    ] f;
+    ]
+    f;
 
-  forDevSystems =
-    f:
+  forDevSystems = f:
     lib.genAttrs [
       "x86_64-linux"
       "aarch64-linux"
       "aarch64-darwin"
-    ] f;
+    ]
+    f;
 
   isLinux = system: lib.hasSuffix "-linux" system;
   isDarwin = system: lib.hasSuffix "-darwin" system;
