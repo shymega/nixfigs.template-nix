@@ -5,19 +5,16 @@
   inputs,
   self,
   ...
-}:
-let
+}: let
   inherit (inputs.home-manager.lib) homeManagerConfiguration;
-  genConfiguration =
-    _hostname:
-    {
-      hostPlatform,
-      username,
-      ...
-    }:
+  genConfiguration = _hostname: {
+    hostPlatform,
+    username,
+    ...
+  }:
     homeManagerConfiguration {
       pkgs = self.genPkgs hostPlatform;
-      modules = [ "${self}/src/homes/${username}@${hostPlatform}" ];
+      modules = ["${self}/src/homes/${username}@${hostPlatform}"];
       extraSpecialArgs = {
         inherit
           inputs
@@ -28,6 +25,6 @@ let
       };
     };
 in
-inputs.nixpkgs.lib.mapAttrs genConfiguration (
-  inputs.nixpkgs.lib.filterAttrs (_: host: host.type == "home-manager") self.hosts
-)
+  inputs.nixpkgs.lib.mapAttrs genConfiguration (
+    inputs.nixpkgs.lib.filterAttrs (_: host: host.type == "home-manager") self.hosts
+  )
