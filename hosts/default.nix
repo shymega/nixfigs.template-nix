@@ -18,23 +18,25 @@
     inherit (inputs.nixpkgs.lib.strings) hasSuffix;
   in
     if type == "nixos"
-    then assert (hasSuffix "linux" hostPlatform); {
-      inherit
-        baseModules
-        embedHm
-        extraModules
-        hardwareModules
-        hostPlatform
-        hostRoles
-        hostname
-        type
-        username
-        ;
-    }
+    then
+      assert (hasSuffix "linux" hostPlatform); {
+        inherit
+          baseModules
+          embedHm
+          extraModules
+          hardwareModules
+          hostPlatform
+          hostRoles
+          hostname
+          type
+          username
+          ;
+      }
     else if type == "home-manager"
-    then assert username != null; {
-      inherit type hostPlatform username;
-    }
+    then
+      assert username != null; {
+        inherit type hostPlatform username;
+      }
     else throw "unknown host type '${type}'";
 in {
   inherit mkHost;
