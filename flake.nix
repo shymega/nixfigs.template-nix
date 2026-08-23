@@ -4,90 +4,83 @@
 {
   description = "shy-nixfigs: a Nix flake template distilled from shymega/nixfigs";
 
-  outputs =
-    inputs:
-    let
-      inherit (inputs) self nixfigs;
-      rolesModule = import ./nix-support/roles.nix;
-      systemsModule = import ./nix-support/systems.nix { inherit inputs; };
-      inherit (systemsModule) treefmtSystems forDevSystems;
-      treeFmtEachSystem =
-        f: inputs.nixpkgs.lib.genAttrs treefmtSystems (system: f inputs.nixpkgs.legacyPackages.${system});
-      treeFmtEval = treeFmtEachSystem (
-        pkgs: inputs.treefmt-nix.lib.evalModule pkgs ./nix-support/formatter.nix
-      );
+  outputs = inputs: let
+    inherit (inputs) self nixfigs;
+    rolesModule = import ./nix-support/roles.nix;
+    systemsModule = import ./nix-support/systems.nix {inherit inputs;};
+    inherit (systemsModule) treefmtSystems forDevSystems;
+    treeFmtEachSystem = f: inputs.nixpkgs.lib.genAttrs treefmtSystems (system: f inputs.nixpkgs.legacyPackages.${system});
+    treeFmtEval = treeFmtEachSystem (
+      pkgs: inputs.treefmt-nix.lib.evalModule pkgs ./nix-support/formatter.nix
+    );
+  in {
+    inherit (rolesModule) roles;
+    inherit (rolesModule) utils;
+
+    # Inherited wholesale from nixfigs (this repo, `refactor/mk-v` branch) for now,
+    # so this template tracks the same package set/overlays as its parent until it
+    # grows an overlay tree of its own.
+    inherit (nixfigs) nixpkgs-config;
+    inherit (nixfigs) overlays;
+    inherit (nixfigs) packages;
+
+    genPkgs = system:
+      import inputs.nixpkgs {
+        inherit system;
+        overlays = builtins.attrValues self.overlays;
+        config = self.nixpkgs-config;
+      };
+
+    homeConfigurations = import ./hosts/homes {inherit inputs self;};
+    nixosConfigurations = import ./hosts/nixos {inherit inputs self;};
+
+    hosts = with builtins; let
+      lak = list:
+        listToAttrs (
+          map (v: {
+            name = v.hostname or "home-manager-cfg";
+            value = v;
+          })
+          list
+        );
+      raw = import ./hosts {inherit self inputs;};
     in
-    {
-      inherit (rolesModule) roles;
-      inherit (rolesModule) utils;
-
-      # Inherited wholesale from nixfigs (this repo, `refactor/mk-v` branch) for now,
-      # so this template tracks the same package set/overlays as its parent until it
-      # grows an overlay tree of its own.
-      inherit (nixfigs) nixpkgs-config;
-      inherit (nixfigs) overlays;
-      inherit (nixfigs) packages;
-
-      genPkgs =
-        system:
-        import inputs.nixpkgs {
-          inherit system;
-          overlays = builtins.attrValues self.overlays;
-          config = self.nixpkgs-config;
-        };
-
-      homeConfigurations = import ./hosts/homes { inherit inputs self; };
-      nixosConfigurations = import ./hosts/nixos { inherit inputs self; };
-
-      hosts =
-        with builtins;
-        let
-          lak =
-            list:
-            listToAttrs (
-              map (v: {
-                name = v.hostname or "home-manager-cfg";
-                value = v;
-              }) list
-            );
-          raw = import ./hosts { inherit self inputs; };
-        in
-        lak (
-          map (
-            v:
+      lak (
+        map (
+          v:
             import v {
               inherit self inputs;
               inherit (raw) mkHost;
             }
-          ) raw.enabled
-        );
+        )
+        raw.enabled
+      );
+
     formatter = treeFmtEachSystem (pkgs: treeFmtEval.${pkgs.stdenv.hostPlatform.system}.config.build.wrapper);
 
-      formatter = treeFmtEachSystem (pkgs: treeFmtEval.${pkgs.system}.config.build.wrapper);
+    devShells = forDevSystems (system: {
+      default = import ./nix-support/devshell.nix {
+        inherit inputs self;
+        hostPlatform = system;
+      };
+    });
 
-      devShells = forDevSystems (system: {
-        default = import ./nix-support/devshell.nix {
+    checks =
+      treeFmtEachSystem (pkgs: {
+        formatting = treeFmtEval.${pkgs}.config.build.wrapper;
+      })
+      // forDevSystems (system: {
+        pre-commit-check = import ./nix-support/checks.nix {
           inherit inputs self;
           hostPlatform = system;
         };
       });
 
-      checks =
-        treeFmtEachSystem (pkgs: {
-          formatting = treeFmtEval.${pkgs}.config.build.wrapper;
-        })
-        // forDevSystems (system: {
-          pre-commit-check = import ./nix-support/checks.nix {
-            inherit inputs self;
-            hostPlatform = system;
-          };
-        });
-
-      templates.default = {
-        path = ./.;
-        description = "shymega/nixfigs-derived Nix flake starter (mkHost, roles, devshell, formatter, checks)";
-      };
+    templates.default = {
+      path = ./.;
+      description = "shymega/nixfigs-derived Nix flake starter (mkHost, roles, devshell, formatter, checks)";
     };
+  };
 
   inputs = {
     # This repository, pinned to the branch it was distilled from. Also supplies

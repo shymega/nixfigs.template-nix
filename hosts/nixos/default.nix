@@ -5,20 +5,17 @@
   inputs,
   self,
   ...
-}:
-let
-  genConfiguration =
-    hostname:
-    {
-      baseModules,
-      embedHm,
-      extraModules,
-      hardwareModules,
-      hostPlatform,
-      hostRoles,
-      username,
-      ...
-    }:
+}: let
+  genConfiguration = hostname: {
+    baseModules,
+    embedHm,
+    extraModules,
+    hardwareModules,
+    hostPlatform,
+    hostRoles,
+    username,
+    ...
+  }:
     inputs.nixpkgs.lib.nixosSystem {
       pkgs = self.genPkgs hostPlatform;
       modules =
@@ -63,6 +60,6 @@ let
       };
     };
 in
-inputs.nixpkgs.lib.mapAttrs genConfiguration (
-  inputs.nixpkgs.lib.filterAttrs (_: host: host.type == "nixos") self.hosts
-)
+  inputs.nixpkgs.lib.mapAttrs genConfiguration (
+    inputs.nixpkgs.lib.filterAttrs (_: host: host.type == "nixos") self.hosts
+  )

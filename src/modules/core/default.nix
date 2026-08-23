@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-only
 # Foundation module every host imports, mirroring nixfigs' src/modules/core.
-{ username, ... }: {
+{username, ...}: {
   nix.settings.experimental-features = [
     "nix-command"
     "flakes"
@@ -10,7 +10,7 @@
 
   users.users.${username} = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ];
+    extraGroups = ["wheel"];
   };
 
   system.stateVersion = "26.05";
