@@ -88,7 +88,7 @@
     # `packages` outputs above.
     nixfigs = {
       url = "git+ssh://git@github.com/shymega/nixfigs.git?ref=refactor/mk-v";
-    
+
       inputs.git-hooks.follows = "git-hooks";
       inputs.home-manager.follows = "home-manager";
       inputs.sops-nix.follows = "sops-nix";
