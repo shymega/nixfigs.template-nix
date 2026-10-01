@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2026 Dom Rodriguez <shymega@shymega.org.uk>
+# SPDX-FileCopyrightText: 2023-2026 Dom 'shymega' Rodriguez <shymega@shymega.org.uk>
 #
-# SPDX-License-Identifier: GPL-3.0-only
+# SPDX-License-Identifier: Apache-2.0
 # `mkHost`: the same declarative-record-builder pattern as nixfigs' hosts/default.nix,
 # trimmed to the inputs this template actually wires up (nixos + home-manager).
 {inputs, ...}: let
